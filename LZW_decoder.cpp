@@ -36,19 +36,30 @@ void LZWdecode::decompress(std::string fileName)
         return;
     }
 
-    //std::string inputFileString;
+    std::ofstream outputFile;
+    outputFile.open(fileName.substr(0,fileName.find(".")+1) + "_decoded.txt");
 
     //find file size
     unsigned int numBytes = inputFile.tellg();
-    unsigned int numCodes = ((8*numBytes)/bits)%12 == 0 ? ((8*numBytes)/bits) : ((8*numBytes)/bits) + 1;
+    unsigned int numCodes = (8*numBytes)/bits;
     char c;
+    std::string prevString, currentString;
     unsigned int long charKey;
     std::string threeByteString; //stores two or three bytes
 
+    if(!(8*numBytes % 12 == 0)){
+        numCodes--;
+    }
+
     inputFile.seekg(0, std::ios::beg);
 
+    //find dictionary size
+    unsigned int dictionarySize = dictionary.size();
+    //dictionarySize++;
+    //std::cout << dictionarySize << std::endl;
+
     //Deal with two 12 bit codes at a time
-    for(int y=0; y<((8*numBytes)/bits); y+=2)
+    for(int y=0; y<numCodes; y+=2)
     {
         threeByteString.clear();
 
@@ -63,9 +74,38 @@ void LZWdecode::decompress(std::string fileName)
         {
             std::bitset<12> codeBin(threeByteString.substr(i*bits,bits));
             charKey = codeBin.to_ulong();
-            std::cout << charKey << std::endl; //dictionary[charKey];
+            currentString = dictionary[charKey];
+            //std::cout << charKey << std::endl;
+            //outputFile << charKey << " ";
+            outputFile << currentString;
+            //add key to dictionary
+            if(!prevString.empty()){
+                //std::cout << "Adding: " << dictionarySize << ", " << prevString+currentString << std::endl;
+                //dictionary.insert({dictionarySize,prevString+currentString});
+                dictionary.insert({dictionarySize,prevString+currentString.substr(0,1)});
+                dictionarySize++;
+            }
+            //std::cout << charKey << std::endl; //dictionary[charKey];
+            //output character to file
+
+            //std::cout << dictionary[charKey] << std::endl;
+            //reset if dictionary is too big
+            if(dictionarySize>=pow(2,bits))
+            {
+                initialiseDictionary();
+                dictionarySize = dictionary.size();
+                prevString.clear();
+            } else {
+                prevString = dictionary[charKey];
+            }
         }
     }
 
+    //may have a 16 bit code left
+    if(inputFile.get(c)){
+    std::cout << "we have not finished" << std::endl;
+    }
+
+    outputFile.close();
     inputFile.close();
 }

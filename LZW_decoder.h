@@ -1,8 +1,10 @@
 #ifndef LZW_DECODER_H_INCLUDED
 #define LZW_DECODER_H_INCLUDED
 
+#include<math.h>
+
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <bitset>
 
 #include <iostream>
@@ -12,10 +14,10 @@ class LZWdecode{
 
 private:
     int bits=12;
-    //std::map<int,std::string> dictionary;
+    //std::unordered_map<int,std::string> dictionary;
 
 public:
-    std::map<int,std::string> dictionary;
+    std::unordered_map<int,std::string> dictionary;
 
     LZWdecode();
     ~LZWdecode();
