@@ -74,11 +74,21 @@ void LZWdecode::decompress(std::string fileName)
         {
             std::bitset<12> codeBin(threeByteString.substr(i*bits,bits));
             charKey = codeBin.to_ulong();
-            currentString = dictionary[charKey];
+            //currentString = dictionary[charKey];
             //std::cout << charKey << std::endl;
             //outputFile << charKey << " ";
-            outputFile << currentString;
+            if(dictionary.find(charKey) != dictionary.end())
+            {
+                currentString = dictionary[charKey];
+                outputFile << currentString;
+            } else {
+                currentString = prevString + prevString.substr(0,1);
+                outputFile << currentString;
+            }
+            //outputFile << currentString;
             //add key to dictionary
+
+            //avoid adding a character
             if(!prevString.empty()){
                 //std::cout << "Adding: " << dictionarySize << ", " << prevString+currentString << std::endl;
                 //dictionary.insert({dictionarySize,prevString+currentString});
@@ -90,14 +100,17 @@ void LZWdecode::decompress(std::string fileName)
 
             //std::cout << dictionary[charKey] << std::endl;
             //reset if dictionary is too big
+            prevString = currentString;
+
             if(dictionarySize>=pow(2,bits))
             {
+                //prevString = currentString.back();
                 initialiseDictionary();
                 dictionarySize = dictionary.size();
-                prevString.clear();
-            } else {
-                prevString = dictionary[charKey];
             }
+
+            //prevString = dictionary[charKey];
+
         }
     }
 
