@@ -1,10 +1,10 @@
 #include "LZW_decoder.h"
 
-LZWdecode::LZWdecode(){}
+lzwText::lzwText(){}
 
-LZWdecode::~LZWdecode(){}
+lzwText::~lzwText(){}
 
-void LZWdecode::initialiseDictionary()
+void lzwText::initialiseDictionary()
 {
 
     if(!dictionary.empty())
@@ -20,7 +20,7 @@ void LZWdecode::initialiseDictionary()
     }
 };
 
-void LZWdecode::decompress(std::string fileName)
+void lzwText::decompress(std::string fileName)
 {
     std::ifstream inputFile;
     inputFile.open(fileName, std::ifstream::binary | std::ifstream::ate);

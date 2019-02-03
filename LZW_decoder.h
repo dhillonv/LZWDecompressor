@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 
-class LZWdecode{
+class lzwText{
 
 private:
     int bits=12; //each code is 12 bits
@@ -18,8 +18,8 @@ private:
 
 public:
 
-    LZWdecode();
-    ~LZWdecode();
+    lzwText();
+    ~lzwText();
 
     //initialises dictionary with the first 256 ASCII characters
     void initialiseDictionary();
