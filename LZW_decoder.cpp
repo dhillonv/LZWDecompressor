@@ -4,8 +4,6 @@ LZWdecode::LZWdecode(){}
 
 LZWdecode::~LZWdecode(){}
 
-
-//initialises dictionary with the first 256 ASCII characters
 void LZWdecode::initialiseDictionary()
 {
 
@@ -22,8 +20,6 @@ void LZWdecode::initialiseDictionary()
     }
 };
 
-//decompresses the input file and outputs as a .txt file.
-//fileName should include its file extension
 void LZWdecode::decompress(std::string fileName)
 {
     std::ifstream inputFile;
@@ -100,7 +96,6 @@ void LZWdecode::decompress(std::string fileName)
                 initialiseDictionary();
                 dictionarySize = dictionary.size();
             }
-
         }
     }
 
@@ -122,7 +117,6 @@ void LZWdecode::decompress(std::string fileName)
         currentString = dictionary[charKey];
         outputFile << currentString;
     }
-
     inputFile.close();
     outputFile.close();
 }

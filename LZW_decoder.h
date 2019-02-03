@@ -13,7 +13,7 @@
 class LZWdecode{
 
 private:
-    int bits=12;
+    int bits=12; //each code is 12 bits
     std::unordered_map<int,std::string> dictionary;
 
 public:
@@ -25,6 +25,7 @@ public:
     void initialiseDictionary();
 
     //decompresses the input file and outputs as a .txt file.
+    //fileName should include its file extension
     void decompress(std::string fileName);
 
 };
