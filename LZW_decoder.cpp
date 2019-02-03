@@ -78,6 +78,7 @@ void lzwText::decompress(std::string fileName)
                 currentString = dictionary[charKey];
                 outputFile << currentString;
             } else {
+                //if the key is not in the dictionary we can infer its value
                 currentString = prevString + prevString.substr(0,1);
                 outputFile << currentString;
             }
