@@ -17,7 +17,6 @@ void LZWdecode::initialiseDictionary()
     //add first 256 ASCII characters to dictionary
     for (int i=0; i<256; i++)
     {
-        //char asciiChar = i;
         std::string asciiString(1,i) ;
         dictionary.insert({i,asciiString});
     }
@@ -47,8 +46,8 @@ void LZWdecode::decompress(std::string fileName)
     unsigned int long charKey;
     std::string threeByteString; //stores two or three bytes
 
-    if(!(8*numBytes % 12 == 0)){
-        numCodes--;
+    if(!(8*numBytes % bits == 0)){
+        numCodes-=1;
     }
 
     inputFile.seekg(0, std::ios::beg);
@@ -74,9 +73,7 @@ void LZWdecode::decompress(std::string fileName)
         {
             std::bitset<12> codeBin(threeByteString.substr(i*bits,bits));
             charKey = codeBin.to_ulong();
-            //currentString = dictionary[charKey];
-            //std::cout << charKey << std::endl;
-            //outputFile << charKey << " ";
+
             if(dictionary.find(charKey) != dictionary.end())
             {
                 currentString = dictionary[charKey];
@@ -85,38 +82,51 @@ void LZWdecode::decompress(std::string fileName)
                 currentString = prevString + prevString.substr(0,1);
                 outputFile << currentString;
             }
-            //outputFile << currentString;
             //add key to dictionary
 
             //avoid adding a character
             if(!prevString.empty()){
-                //std::cout << "Adding: " << dictionarySize << ", " << prevString+currentString << std::endl;
-                //dictionary.insert({dictionarySize,prevString+currentString});
                 dictionary.insert({dictionarySize,prevString+currentString.substr(0,1)});
                 dictionarySize++;
             }
-            //std::cout << charKey << std::endl; //dictionary[charKey];
-            //output character to file
 
-            //std::cout << dictionary[charKey] << std::endl;
             //reset if dictionary is too big
             prevString = currentString;
 
             if(dictionarySize>=pow(2,bits))
             {
-                //prevString = currentString.back();
+
                 initialiseDictionary();
                 dictionarySize = dictionary.size();
             }
 
-            //prevString = dictionary[charKey];
-
         }
     }
 
-    //may have a 16 bit code left
-    if(inputFile.get(c)){
-    std::cout << "we have not finished" << std::endl;
+    //may have a 16 bit code left, if so do
+    //the same as above with a 16 bit code
+    if(!(8*numBytes % bits == 0))
+    {
+        threeByteString.clear();
+        for(int i=0;i<2;i++)
+        {
+            inputFile.get(c);
+            std::bitset<8> charBin(c);
+            threeByteString += charBin.to_string();
+        }
+
+        std::bitset<16> codeBin(threeByteString);
+        charKey = codeBin.to_ulong();
+
+        if(dictionary.find(charKey) != dictionary.end())
+            {
+                currentString = dictionary[charKey];
+                outputFile << currentString;
+            } else {
+                currentString = prevString + prevString.substr(0,1);
+                outputFile << currentString;
+            }
+
     }
 
     outputFile.close();
