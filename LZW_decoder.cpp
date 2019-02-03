@@ -29,36 +29,36 @@ void LZWdecode::decompress(std::string fileName)
     std::ifstream inputFile;
     inputFile.open(fileName, std::ifstream::binary | std::ifstream::ate);
 
+    //check if file was successfully opened
     if(!inputFile.is_open())
     {
         std::cout << "Error. Unable to open " << fileName << std::endl;
         return;
     }
 
+    //output file
     std::ofstream outputFile;
-    outputFile.open(fileName.substr(0,fileName.find(".")+1) + "_decoded.txt");
+    outputFile.open(fileName.substr(0,fileName.find(".")) + "_decoded.txt");
 
-    //find file size
-    unsigned int numBytes = inputFile.tellg();
-    unsigned int numCodes = (8*numBytes)/bits;
+    //find input file size
+    unsigned int numBytes = inputFile.tellg(), numCodes = (8*numBytes)/bits, charKey;
     char c;
-    std::string prevString, currentString;
-    unsigned int long charKey;
-    std::string threeByteString; //stores two or three bytes
+    std::string prevString, currentString, threeByteString;
 
+    //check if the last code has been padded to 16 bit
     if(!(8*numBytes % bits == 0)){
         numCodes-=1;
     }
 
+    //return to beginning of the file
     inputFile.seekg(0, std::ios::beg);
 
-    //find dictionary size
+    //initialise dictionary and find dictionary size
+    initialiseDictionary();
     unsigned int dictionarySize = dictionary.size();
-    //dictionarySize++;
-    //std::cout << dictionarySize << std::endl;
 
     //Deal with two 12 bit codes at a time
-    for(int y=0; y<numCodes; y+=2)
+    for(unsigned int y=0; y<numCodes; y+=2)
     {
         threeByteString.clear();
 
@@ -69,11 +69,14 @@ void LZWdecode::decompress(std::string fileName)
             threeByteString += charBin.to_string();
         }
 
+        //threeByteString contains two 12 bit codes, now process these
         for(int i=0;i<2;i++)
         {
+            //evaluate key for 12 bit code
             std::bitset<12> codeBin(threeByteString.substr(i*bits,bits));
             charKey = codeBin.to_ulong();
 
+            //see if key is in dictionary or not
             if(dictionary.find(charKey) != dictionary.end())
             {
                 currentString = dictionary[charKey];
@@ -82,20 +85,18 @@ void LZWdecode::decompress(std::string fileName)
                 currentString = prevString + prevString.substr(0,1);
                 outputFile << currentString;
             }
-            //add key to dictionary
 
-            //avoid adding a character
+            //add running string to dictionary
             if(!prevString.empty()){
                 dictionary.insert({dictionarySize,prevString+currentString.substr(0,1)});
                 dictionarySize++;
             }
 
-            //reset if dictionary is too big
             prevString = currentString;
 
+            //reset dictionary if too big
             if(dictionarySize>=pow(2,bits))
             {
-
                 initialiseDictionary();
                 dictionarySize = dictionary.size();
             }
@@ -104,7 +105,7 @@ void LZWdecode::decompress(std::string fileName)
     }
 
     //may have a 16 bit code left, if so do
-    //the same as above with a 16 bit code
+    //the same as above but with a 16 bit code
     if(!(8*numBytes % bits == 0))
     {
         threeByteString.clear();
@@ -117,18 +118,11 @@ void LZWdecode::decompress(std::string fileName)
 
         std::bitset<16> codeBin(threeByteString);
         charKey = codeBin.to_ulong();
-
-        if(dictionary.find(charKey) != dictionary.end())
-            {
-                currentString = dictionary[charKey];
-                outputFile << currentString;
-            } else {
-                currentString = prevString + prevString.substr(0,1);
-                outputFile << currentString;
-            }
-
+        //since this is the last code, it must be in the dictionary
+        currentString = dictionary[charKey];
+        outputFile << currentString;
     }
 
-    outputFile.close();
     inputFile.close();
+    outputFile.close();
 }
